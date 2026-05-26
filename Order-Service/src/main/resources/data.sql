@@ -6,7 +6,7 @@ INSERT INTO orders (id, order_status, price) VALUES
 (5, 'CONFIRMED', 8298.00)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO order_item (id, product_id, quantity, order_id) VALUES
+INSERT INTO item (id, product_id, quantity, order_id) VALUES
 (1, 1, 1, 1),
 (2, 3, 1, 1),
 (3, 5, 2, 1),
@@ -20,4 +20,4 @@ INSERT INTO order_item (id, product_id, quantity, order_id) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('orders_id_seq', COALESCE((SELECT MAX(id) FROM orders), 1));
-SELECT setval('order_item_id_seq', COALESCE((SELECT MAX(id) FROM order_item), 1));
+SELECT setval('item_id_seq', COALESCE((SELECT MAX(id) FROM item), 1));

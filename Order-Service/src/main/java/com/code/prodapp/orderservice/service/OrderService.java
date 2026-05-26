@@ -1,5 +1,6 @@
 package com.code.prodapp.orderservice.service;
 
+import com.code.prodapp.orderservice.DTOs.ItemRequestDTO;
 import com.code.prodapp.orderservice.DTOs.OrderRequestDTO;
 import com.code.prodapp.orderservice.DTOs.ReduceStockRequestDTO;
 import com.code.prodapp.orderservice.clients.InventoryClient;
@@ -11,9 +12,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,7 +52,9 @@ public class OrderService {
                 orderRequestDTO.getItems()
                         .stream()
                         .map(item -> {
-                            Item item1 = modelMapper.map(item, Item.class);
+                            Item item1 = new Item();
+                            item1.setProductId(item.getProductId());
+                            item1.setQuantity(item.getQuantity());
                             // Bi-Directional Relationship
                             item1.setOrders(order);
                             return item1;
@@ -67,7 +70,11 @@ public class OrderService {
         // Save the Order in DB
         order.setOrderStatus(OrderStatus.CONFIRMED);
         Orders savedOrder = orderRepository.save(order);
-        return modelMapper.map(order,OrderRequestDTO.class);
+        List<ItemRequestDTO> savedItems = savedOrder.getItems()
+                .stream()
+                .map(item -> new ItemRequestDTO(item.getId(), item.getProductId(), item.getQuantity()))
+                .toList();
+        return new OrderRequestDTO(savedOrder.getId(), savedItems, BigDecimal.valueOf(savedOrder.getPrice()));
 
 
     }
