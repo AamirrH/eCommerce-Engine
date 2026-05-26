@@ -16,7 +16,7 @@ import java.util.List;
 public class OrderRequestDTO {
 
     private Long id;
-    private List<OrderItemRequestDTO> items;
+    private List<ItemRequestDTO> items;
     private BigDecimal totalPrice;
 
 }

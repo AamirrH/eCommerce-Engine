@@ -33,6 +33,12 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
+    @PostMapping("/createOrder")
+    public ResponseEntity<OrderRequestDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO){
+        return ResponseEntity.ok(orderService.createOrder(orderRequestDTO));
+    }
+
+
 
 
 }

@@ -2,6 +2,7 @@ package com.code.prodapp.inventoryservice.controllers;
 
 
 import com.code.prodapp.inventoryservice.DTOs.ProductDTO;
+import com.code.prodapp.inventoryservice.DTOs.ReduceStockRequestDTO;
 import com.code.prodapp.inventoryservice.clients.OrdersFeignClient;
 import com.code.prodapp.inventoryservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ public class ProductController {
 
     private final ProductService productService;
     private final DiscoveryClient discoveryClient;
-    private final RestClient restClient;
     private final OrdersFeignClient ordersFeignClient;
 
     @GetMapping("/fetchProducts")
@@ -48,6 +48,11 @@ public class ProductController {
     @PostMapping("/{ID}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable(name = "ID") Long id){
         return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @PostMapping("/reduceStock")
+    public void reduceStock(@RequestBody List<ReduceStockRequestDTO> itemsToReduce){
+        productService.reduceStock(itemsToReduce);
     }
 
 
