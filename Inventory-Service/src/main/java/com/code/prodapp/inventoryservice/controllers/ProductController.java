@@ -2,6 +2,7 @@ package com.code.prodapp.inventoryservice.controllers;
 
 
 import com.code.prodapp.inventoryservice.DTOs.ProductDTO;
+import com.code.prodapp.inventoryservice.clients.OrdersFeignClient;
 import com.code.prodapp.inventoryservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,29 +25,12 @@ public class ProductController {
     private final ProductService productService;
     private final DiscoveryClient discoveryClient;
     private final RestClient restClient;
+    private final OrdersFeignClient ordersFeignClient;
 
     @GetMapping("/fetchProducts")
     public String fetchProducts() {
-        List<String> services = discoveryClient.getServices();
-        String orderServiceId = services.stream()
-                .filter(serviceId -> serviceId.equalsIgnoreCase("ORDER-SERVICE"))
-                .findFirst()
-                .orElse("ORDER-SERVICE");
-
-        List<ServiceInstance> orderServices = discoveryClient.getInstances(orderServiceId);
-        if (orderServices.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.SERVICE_UNAVAILABLE,
-                    "ORDER-SERVICE is not visible to Inventory-Service. Discovered services: " + services
-            );
-        }
-
-        ServiceInstance orderService = orderServices.getFirst();
-        String response = restClient.get()
-                .uri(orderService.getUri()+"/api/v1/orders/testOrders")
-                .retrieve()
-                .body(String.class);
-        return response;
+        log.info("fetchProducts");
+        return ordersFeignClient.testOrders();
     }
 
     @GetMapping("/discovered-services")
