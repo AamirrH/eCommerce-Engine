@@ -24,7 +24,7 @@ public class JWTService {
         return Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
     }
 
-    protected String generateAccessToken(UserEntity user){
+    public String generateAccessToken(UserEntity user){
         return Jwts.builder()
                 .subject(String.valueOf(user.getId()))
                 .claim("username",user.getUsername())
@@ -37,7 +37,7 @@ public class JWTService {
                 .compact();
     }
 
-    protected String generateRefreshToken(UserEntity user){
+    public String generateRefreshToken(UserEntity user){
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("username",user.getUsername())
@@ -51,13 +51,22 @@ public class JWTService {
     }
 
     // This method verifies JWT and also returns the userId from token of the User.
-    protected Long getUserIdFromToken(String token){
+    public Long getUserIdFromToken(String token){
         Claims claims = Jwts.parser()
                 .verifyWith(HMACGeneratedKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
         return Long.valueOf(claims.getSubject());
+    }
+
+    public void validateToken(String token){
+        Claims claims = Jwts.parser()
+                .verifyWith(HMACGeneratedKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return ;
     }
 
 

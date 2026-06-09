@@ -6,6 +6,7 @@ import com.code.prodapp.authservice.DTOs.LoginResponseDTO;
 import com.code.prodapp.authservice.DTOs.SignupRequestDTO;
 import com.code.prodapp.authservice.DTOs.SignupResponseDTO;
 import com.code.prodapp.authservice.entities.UserEntity;
+import com.code.prodapp.authservice.exceptions.TokenException;
 import com.code.prodapp.authservice.exceptions.UserAlreadyExistsException;
 import com.code.prodapp.authservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,24 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         return new LoginResponseDTO(user.getUsername(), accessToken, refreshToken);
+    }
+
+    public LoginResponseDTO refreshAccessToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new TokenException("Refresh token cookie is missing, You might need to login again");
+        }
+
+        UserEntity user;
+        try {
+            Long userId = jwtService.getUserIdFromToken(refreshToken);
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new TokenException("The Refresh Token is invalid, You might need to login again"));
+        } catch (Exception e) {
+            throw new TokenException("The Refresh Token is invalid, You might need to login again");
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(user);
+        return new LoginResponseDTO(user.getUsername(), newAccessToken, refreshToken);
     }
 
 }
