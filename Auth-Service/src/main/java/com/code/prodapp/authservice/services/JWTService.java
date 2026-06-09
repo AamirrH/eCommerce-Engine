@@ -50,6 +50,7 @@ public class JWTService {
                 .compact();
     }
 
+    // This method verifies JWT and also returns the userId from token of the User.
     protected Long getUserIdFromToken(String token){
         Claims claims = Jwts.parser()
                 .verifyWith(HMACGeneratedKey())
