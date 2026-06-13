@@ -50,4 +50,16 @@ public class AdminControllers {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/nearest")
+    public ResponseEntity<WarehouseResponseDTO> findNearestWarehouse(@RequestParam(required = true) double lon,
+                                                                     @RequestParam(required = true) double lat
+                                                                     ){
+        // Longitude -> X
+        // Latitude ->  Y
+        return ResponseEntity.ok(warehouseService.findNearestWarehouse(lon,lat));
+
+    }
+
+
+
 }

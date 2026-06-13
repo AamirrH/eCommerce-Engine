@@ -1,5 +1,6 @@
-package com.code.prodapp.warehouseservice.exceptions;
+package com.code.prodapp.warehouseservice.advices;
 
+import com.code.prodapp.warehouseservice.exceptions.WarehouseNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

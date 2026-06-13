@@ -96,4 +96,13 @@ public class WarehouseService {
         point.setSRID(WGS_84_SRID);
         return point;
     }
+
+    public WarehouseResponseDTO findNearestWarehouse(double lon, double lat) {
+        log.info("Finding nearest warehouse by lat {} lon {}", lat, lon);
+        Warehouse closestWarehouse = warehouseRepository.findNearestWarehouse(lon,lat).orElseThrow(
+                () -> new WarehouseNotFoundException("No Warehouse found")
+        );
+        return mapToDTO(closestWarehouse);
+
+    }
 }
