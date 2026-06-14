@@ -2,15 +2,17 @@ package com.code.prodapp.inventoryservice.service;
 
 
 import com.code.prodapp.inventoryservice.DTOs.AddStockRequestDTO;
+import com.code.prodapp.inventoryservice.DTOs.CreateProductRequestDTO;
 import com.code.prodapp.inventoryservice.DTOs.ProductDTO;
 import com.code.prodapp.inventoryservice.DTOs.ReduceStockRequestDTO;
+import com.code.prodapp.inventoryservice.DTOs.UpdateProductRequestDTO;
 import com.code.prodapp.inventoryservice.entities.Product;
 import com.code.prodapp.inventoryservice.exceptions.NotEnoughStockAvailableException;
+import com.code.prodapp.inventoryservice.exceptions.ProductNotFoundException;
 import com.code.prodapp.inventoryservice.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -35,15 +37,65 @@ public class ProductService {
 
     public ProductDTO getProductById(Long id){
         log.info("Getting product by id {}", id);
-        return modelMapper.map(productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inventory Not Found")),ProductDTO.class);
+        return modelMapper.map(findProductEntityById(id), ProductDTO.class);
+    }
+
+    @Transactional
+    public ProductDTO createProduct(CreateProductRequestDTO requestDTO) {
+        log.info("Creating product {}", requestDTO.getProductName());
+
+        Product product = new Product();
+        product.setProductName(requestDTO.getProductName());
+        product.setProductPrice(requestDTO.getProductPrice());
+        product.setStock(requestDTO.getStock());
+
+        return modelMapper.map(productRepository.save(product), ProductDTO.class);
+    }
+
+    @Transactional
+    public ProductDTO updateProduct(Long id, CreateProductRequestDTO requestDTO) {
+        log.info("Updating product by id {}", id);
+
+        Product product = findProductEntityById(id);
+        product.setProductName(requestDTO.getProductName());
+        product.setProductPrice(requestDTO.getProductPrice());
+        product.setStock(requestDTO.getStock());
+
+        return modelMapper.map(productRepository.save(product), ProductDTO.class);
+    }
+
+    @Transactional
+    public ProductDTO patchProduct(Long id, UpdateProductRequestDTO requestDTO) {
+        log.info("Patching product by id {}", id);
+
+        Product product = findProductEntityById(id);
+
+        if (requestDTO.getProductName() != null) {
+            product.setProductName(requestDTO.getProductName());
+        }
+        if (requestDTO.getProductPrice() != null) {
+            product.setProductPrice(requestDTO.getProductPrice());
+        }
+        if (requestDTO.getStock() != null) {
+            product.setStock(requestDTO.getStock());
+        }
+
+        return modelMapper.map(productRepository.save(product), ProductDTO.class);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        log.info("Deleting product by id {}", id);
+
+        Product product = findProductEntityById(id);
+        productRepository.delete(product);
     }
 
     @Transactional
     public void reduceStock(List<ReduceStockRequestDTO> reduceStockRequestDTOS){
         reduceStockRequestDTOS.forEach(item -> {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product Not Found"));
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + item.getProductId()));
             if(product.getStock()<item.getQuantity()){
                 throw new NotEnoughStockAvailableException("Product Stock Not Enough");
             }
@@ -60,13 +112,18 @@ public class ProductService {
     public void addStock(List<AddStockRequestDTO> addStockRequestDTOS){
         addStockRequestDTOS.forEach(item -> {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product Not Found"));
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + item.getProductId()));
             // Unconditional because when cancelling an order we just have to return the stock
             product.setStock(product.getStock()+item.getQuantity());
             // Save the product
             productRepository.save(product);
         });
         return;
+    }
+
+    private Product findProductEntityById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + id));
     }
 
 
